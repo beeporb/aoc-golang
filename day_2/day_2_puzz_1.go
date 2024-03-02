@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"sync"
 )
 
 // A	Rock		1
@@ -126,25 +127,28 @@ func main() {
 
 	totalScore := 0
 
-	// scores := make(chan int)
+	// how tf am I supposed to know how big the channel should be?
+	scores := make(chan int, 2500)
 
-	// var wg sync.WaitGroup
+	wg := new(sync.WaitGroup)
 
 	for scanner.Scan() {
+		wg.Add(1)
 		line := scanner.Text()
-		// wg.Add(1)
-		// go func() {
-		// 	defer wg.Done()
-		// 	score := processLine(line)
-		// 	scores <- score
-		// }()
-
-		score := processLine(line)
-
-		totalScore += score
+		go func() {
+			defer wg.Done()
+			score := processLine(line)
+			scores <- score
+		}()
 	}
 
-	// wg.Wait()
+	wg.Wait()
+
+	close(scores)
+
+	for score := range scores {
+		totalScore += score
+	}
 
 	fmt.Println("All go routines finished.")
 
