@@ -127,7 +127,6 @@ func main() {
 
 	totalScore := 0
 
-	// how tf am I supposed to know how big the channel should be?
 	scores := make(chan int)
 
 	wg := new(sync.WaitGroup)
