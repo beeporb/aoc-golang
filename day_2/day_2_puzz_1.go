@@ -128,27 +128,27 @@ func main() {
 	totalScore := 0
 
 	// how tf am I supposed to know how big the channel should be?
-	scores := make(chan int, 2500)
+	scores := make(chan int)
 
 	wg := new(sync.WaitGroup)
 
 	for scanner.Scan() {
-		wg.Add(1)
 		line := scanner.Text()
+		wg.Add(1)
 		go func() {
-			defer wg.Done()
 			score := processLine(line)
 			scores <- score
 		}()
 	}
 
+	go func() {
+		for score := range scores {
+			totalScore += score
+			wg.Done()
+		}
+	}()
+
 	wg.Wait()
-
-	close(scores)
-
-	for score := range scores {
-		totalScore += score
-	}
 
 	fmt.Println("All go routines finished.")
 
